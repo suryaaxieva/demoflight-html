@@ -1,0 +1,116 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aviator Bet</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        
+        .container {
+            text-align: center;
+        }
+        
+        .title {
+            font-size: 24px;
+            margin-bottom: 24px;
+            color: black;
+        }
+        
+        .input {
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 16px;
+            width: 200px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+        
+        .button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">Place Your Bet</h1>
+        
+        <input 
+            type="number" 
+            id="betAmount" 
+            value="1" 
+            min="0" 
+            class="input" 
+            placeholder="Enter bet amount"
+        />
+        
+        <br>
+        
+        <button class="button" onclick="handleBet()">
+            Bet $<span id="displayAmount">1</span>
+        </button>
+    </div>
+
+    <script>
+        let betAmount = 1;
+        
+        // Update display when input changes
+        document.getElementById('betAmount').addEventListener('input', function(e) {
+            betAmount = parseFloat(e.target.value) || 0;
+            document.getElementById('displayAmount').textContent = betAmount;
+        });
+        
+        // ✅ Handle bet button click
+        function handleBet() {
+            console.log(`Betting $${betAmount} clicked`);
+            
+            const payload = {
+                action: 'bet',
+                amount: betAmount
+            };
+            
+            // ✅ Send to mini program (no TypeScript issues!)
+            if (typeof my !== 'undefined' && my.postMessage) {
+                my.postMessage(payload);
+                console.log('✅ Message sent to mini program:', payload);
+                alert('Bet placed: $' + betAmount);
+            } else {
+                console.log('⚠️ Not in mini program, would send:', payload);
+                alert('TEST MODE: Would bet $' + betAmount);
+            }
+        }
+        
+        // ✅ Debug on page load
+        window.addEventListener('load', function() {
+            console.log('🔵 Page loaded');
+            console.log('🔵 my available:', typeof my !== 'undefined');
+            
+            if (typeof my !== 'undefined') {
+                console.log('🔵 Running in mini program webview');
+            } else {
+                console.log('🔵 Running in regular browser');
+            }
+        });
+    </script>
+</body>
+</html>
