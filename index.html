@@ -70,7 +70,10 @@
             Bet $<span id="displayAmount">1</span>
         </button>
     </div>
-
+   
+    
+    <script type="text/javascript" src="https://appx/web-view.min.js"></script>
+    
     <script>
         let betAmount = 1;
         
@@ -80,37 +83,50 @@
             document.getElementById('displayAmount').textContent = betAmount;
         });
         
+        // ✅ Wait for SDK to load, then check environment
+        window.addEventListener('load', function() {
+            console.log('🔵 Page loaded');
+            
+            // ✅ Check if running in Mini Program (from docs)
+            my.getEnv(function(res) {
+                console.log('🔍 Mini program environment:', res.miniprogram); // should be true
+                if (res.miniprogram) {
+                    console.log('✅ Running in Alipay Mini Program');
+                    alert('✅ Mini Program environment detected!');
+                } else {
+                    console.log('❌ Not in Mini Program');
+                    alert('❌ Not in Mini Program environment');
+                }
+            });
+        });
+        
         // ✅ Handle bet button click
         function handleBet() {
-            console.log(`Betting $${betAmount} clicked`);
+            console.log(`🟡 Betting $${betAmount} clicked`);
             
             const payload = {
                 action: 'bet',
                 amount: betAmount
             };
             
-            // ✅ Send to mini program (no TypeScript issues!)
+            // ✅ Now my.postMessage should work!
             if (typeof my !== 'undefined' && my.postMessage) {
                 my.postMessage(payload);
                 console.log('✅ Message sent to mini program:', payload);
                 alert('Bet placed: $' + betAmount);
             } else {
-                console.log('⚠️ Not in mini program, would send:', payload);
-                alert('TEST MODE: Would bet $' + betAmount);
+                console.log('🔴 my.postMessage still not available');
+                alert('ERROR: my.postMessage not available');
             }
         }
         
-        // ✅ Debug on page load
-        window.addEventListener('load', function() {
-            console.log('🔵 Page loaded');
-            console.log('🔵 my available:', typeof my !== 'undefined');
-            
-            if (typeof my !== 'undefined') {
-                console.log('🔵 Running in mini program webview');
-            } else {
-                console.log('🔵 Running in regular browser');
-            }
-        });
+        // ✅ Listen for messages from Mini Program (from docs)
+        my.onMessage = function(e) {
+            console.log('📥 Received message from Mini Program:', e);
+        };
     </script>
+
+
+
 </body>
 </html>
