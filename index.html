@@ -1,132 +1,147 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aviator Bet</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f2f5;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        
-        .container {
-            text-align: center;
-        }
-        
-        .title {
-            font-size: 24px;
-            margin-bottom: 24px;
-            color: black;
-        }
-        
-        .input {
-            padding: 10px;
-            font-size: 16px;
-            margin-bottom: 16px;
-            width: 200px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-        }
-        
-        .button {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        
-        .button:hover {
-            background-color: #0056b3;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aviator Bet</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f2f5;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      text-align: center;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .title {
+      font-size: 24px;
+      margin-bottom: 16px;
+      color: black;
+    }
+
+    .balance {
+      font-size: 18px;
+      margin-bottom: 20px;
+      color: green;
+    }
+
+    .input {
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 12px;
+      width: 200px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    .button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 5px;
+    }
+
+    .button:hover {
+      background-color: #0056b3;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1 class="title">Place Your Bet</h1>
-        
-        <input 
-            type="number" 
-            id="betAmount" 
-            value="1" 
-            min="0" 
-            class="input" 
-            placeholder="Enter bet amount"
-        />
-        
-        <br>
-        
-        <button class="button" onclick="handleBet()">
-            Bet $<span id="displayAmount">1</span>
-        </button>
+  <div class="container">
+    <h1 class="title">🎮 You are inside the WebView</h1>
+
+    <div class="balance" id="balanceDisplay">Available Balance: $0</div>
+
+    <button class="button" onclick="showInput()">➕ Add Money</button>
+
+    <div id="amountInput" style="display: none;">
+      <input
+        type="number"
+        id="moneyAmount"
+        class="input"
+        placeholder="Enter $ amount"
+        min="1"
+      />
+      <br />
+      <button class="button" onclick="addMoney()">Confirm</button>
     </div>
-   
-    
-    <script type="text/javascript" src="https://appx/web-view.min.js"></script>
-    
-    <script>
-        let betAmount = 1;
-        
-        // Update display when input changes
-        document.getElementById('betAmount').addEventListener('input', function(e) {
-            betAmount = parseFloat(e.target.value) || 0;
-            document.getElementById('displayAmount').textContent = betAmount;
-        });
-        
-        // ✅ Wait for SDK to load, then check environment
-        window.addEventListener('load', function() {
-            console.log('🔵 Page loaded');
-            
-            // ✅ Check if running in Mini Program (from docs)
-            my.getEnv(function(res) {
-                console.log('🔍 Mini program environment:', res.miniprogram); // should be true
-                if (res.miniprogram) {
-                    console.log('✅ Running in Alipay Mini Program');
-                    alert('✅ Mini Program environment detected!');
-                } else {
-                    console.log('❌ Not in Mini Program');
-                    alert('❌ Not in Mini Program environment');
-                }
-            });
-        });
-        
-        // ✅ Handle bet button click
-        function handleBet() {
-            console.log(`🟡 Betting $${betAmount} clicked`);
-            
-            const payload = {
-                action: 'bet',
-                amount: betAmount
-            };
-            
-            // ✅ Now my.postMessage should work!
-            if (typeof my !== 'undefined' && my.postMessage) {
-                my.postMessage(payload);
-                console.log('✅ Message sent to mini program:', payload);
-                alert('Bet placed: $' + betAmount);
-            } else {
-                console.log('🔴 my.postMessage still not available');
-                alert('ERROR: my.postMessage not available');
-            }
-        }
-        
-        // ✅ Listen for messages from Mini Program (from docs)
-        my.onMessage = function(e) {
-            console.log('📥 Received message from Mini Program:', e);
+
+    <button class="button" onclick="placeBet()">✅ Place Bet</button>
+  </div>
+
+  <script type="text/javascript" src="https://appx/web-view.min.js"></script>
+
+  <script>
+    let balance = 0;
+
+    function showInput() {
+      document.getElementById("amountInput").style.display = "block";
+    }
+
+    function addMoney() {
+      const amount = parseFloat(document.getElementById("moneyAmount").value);
+      if (!isNaN(amount) && amount > 0) {
+        balance += amount;
+        document.getElementById("balanceDisplay").textContent = `Available Balance: $${balance}`;
+        alert(`✅ $${amount} added to balance`);
+        document.getElementById("amountInput").style.display = "none";
+        document.getElementById("moneyAmount").value = "";
+      } else {
+        alert("⚠️ Please enter a valid amount greater than 0");
+      }
+    }
+
+    function placeBet() {
+      if (typeof my !== "undefined" && my.postMessage) {
+        const payload = {
+          action: "bet",
+          amount: balance
         };
-    </script>
+        my.postMessage({ data: [payload] });
+        console.log("✅ Sent bet to MiniApp:", payload);
+        alert("Bet sent: $" + balance);
+      } else {
+        alert("ERROR: my.postMessage not available");
+      }
+    }
 
+    // Optional: Detect Mini Program
+    window.addEventListener("load", function () {
+      console.log("🔵 Page loaded");
 
+      if (typeof my !== "undefined" && my.getEnv) {
+        my.getEnv(function (res) {
+          console.log("🔍 Mini program environment:", res.miniprogram);
+          if (res.miniprogram) {
+            alert("✅ Running inside Alipay Mini Program");
+          } else {
+            alert("❌ Not inside Mini Program");
+          }
+        });
+      }
+    });
 
+    // Optional: Listen for MiniApp messages
+    if (typeof my !== "undefined" && my.onMessage) {
+      my.onMessage = function (e) {
+        console.log("📥 Message from MiniApp:", e);
+      };
+    }
+  </script>
 </body>
 </html>
