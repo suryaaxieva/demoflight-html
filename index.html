@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,125 +7,348 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f2f5;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .webview-badge {
+            background: #2c3e50;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-bottom: 20px;
+            display: inline-block;
         }
         
         .container {
             text-align: center;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
         }
         
         .title {
             font-size: 24px;
-            margin-bottom: 24px;
-            color: black;
+            margin-bottom: 20px;
+            color: #2c3e50;
         }
         
-        .input {
-            padding: 10px;
-            font-size: 16px;
-            margin-bottom: 16px;
-            width: 200px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
+        .balance-display {
+            background: #2ecc71;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .section {
+            margin: 25px 0;
+            padding: 20px;
+            border: 2px solid #ecf0f1;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2c3e50;
         }
         
         .button {
-            padding: 10px 20px;
+            padding: 12px 25px;
             font-size: 16px;
-            background-color: #007bff;
-            color: white;
             border: none;
             border-radius: 8px;
             cursor: pointer;
+            margin: 8px;
+            min-width: 120px;
         }
         
-        .button:hover {
-            background-color: #0056b3;
+        .primary-button {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .success-button {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .danger-button {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .input {
+            padding: 12px;
+            font-size: 16px;
+            margin: 10px;
+            width: 200px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            text-align: center;
+        }
+        
+        .input:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        
+        .bet-display {
+            font-size: 20px;
+            font-weight: bold;
+            color: #e74c3c;
+            margin: 10px 0;
+        }
+        
+        .hidden {
+            display: none;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1 class="title">Place Your Bet</h1>
-        
-        <input 
-            type="number" 
-            id="betAmount" 
-            value="1" 
-            min="0" 
-            class="input" 
-            placeholder="Enter bet amount"
-        />
-        
-        <br>
-        
-        <button class="button" onclick="handleBet()">
-            Bet $<span id="displayAmount">1</span>
-        </button>
+    <div class="webview-badge" id="webviewBadge" style="display: none;">
+        🌐 Running in Mini Program WebView
     </div>
-   
     
+    <div class="container">
+        <h1 class="title">🎮 Aviator Game</h1>
+        
+        <!-- Balance Display -->
+        <div class="balance-display" id="balanceDisplay">
+            Available Balance: $<span id="currentBalance">0.00</span>
+        </div>
+        
+        <!-- Add Money Section -->
+        <div class="section">
+            <div class="section-title">💰 Add Money</div>
+            <button class="button success-button" onclick="showAddMoney()">
+                Add Money to Wallet
+            </button>
+            
+            <div id="addMoneySection" class="hidden">
+                <input 
+                    type="number" 
+                    id="addMoneyInput" 
+                    class="input" 
+                    placeholder="Enter amount (e.g., 10.50)" 
+                    min="0.01" 
+                    step="0.01" 
+                />
+                <br>
+                <button class="button primary-button" onclick="addMoney()">💵 Add Money</button>
+                <button class="button" onclick="hideAddMoney()" style="background: #95a5a6; color: white;">Cancel</button>
+            </div>
+        </div>
+        
+        <!-- Betting Section -->
+        <div class="section">
+            <div class="section-title">🎯 Place Your Bet</div>
+            
+            <!-- Dynamic Bet Amount Input -->
+            <div>
+                <label for="betAmount" style="display: block; margin-bottom: 8px; font-weight: bold;">Bet Amount:</label>
+                <input 
+                    type="number" 
+                    id="betAmount" 
+                    value="1.00" 
+                    min="0.01" 
+                    step="0.01" 
+                    class="input" 
+                    placeholder="Enter bet amount"
+                    onchange="updateBetDisplay()"
+                    oninput="updateBetDisplay()"
+                />
+            </div>
+            
+            <!-- Bet Display -->
+            <div class="bet-display">
+                You're betting: $<span id="displayAmount">1.00</span>
+            </div>
+            
+            <!-- Quick Bet Options -->
+            <div style="margin: 15px 0;">
+                <button class="button" onclick="setBetAmount(1)" style="background: #f39c12; color: white;">$1</button>
+                <button class="button" onclick="setBetAmount(5)" style="background: #f39c12; color: white;">$5</button>
+                <button class="button" onclick="setBetAmount(10)" style="background: #f39c12; color: white;">$10</button>
+                <button class="button" onclick="setBetAmount(25)" style="background: #f39c12; color: white;">$25</button>
+            </div>
+            
+            <!-- Bet Button -->
+            <button class="button danger-button" onclick="handleBet()" style="font-size: 18px; padding: 15px 30px;">
+                🚀 BET $<span id="betButtonAmount">1.00</span>
+            </button>
+        </div>
+    </div>
+
     <script type="text/javascript" src="https://appx/web-view.min.js"></script>
     
     <script>
-        let betAmount = 1;
+        let betAmount = 1.00;
+        let currentBalance = 0.00;
+        let isInMiniProgram = false;
         
-        // Update display when input changes
-        document.getElementById('betAmount').addEventListener('input', function(e) {
-            betAmount = parseFloat(e.target.value) || 0;
-            document.getElementById('displayAmount').textContent = betAmount;
-        });
-        
-        // ✅ Wait for SDK to load, then check environment
+        // ✅ Initialize bet display on page load
         window.addEventListener('load', function() {
-            console.log('🔵 Page loaded');
+            console.log('🔵 WebView page loaded');
             
-            // ✅ Check if running in Mini Program (from docs)
-            my.getEnv(function(res) {
-                console.log('🔍 Mini program environment:', res.miniprogram); // should be true
-                if (res.miniprogram) {
-                    console.log('✅ Running in Alipay Mini Program');
-                    alert('✅ Mini Program environment detected!');
-                } else {
-                    console.log('❌ Not in Mini Program');
-                    alert('❌ Not in Mini Program environment');
-                }
-            });
+            // Initialize bet display
+            updateBetDisplay();
+            
+            // Check if running in Mini Program
+            if (typeof my !== 'undefined' && my.getEnv) {
+                my.getEnv(function(res) {
+                    isInMiniProgram = res.miniprogram;
+                    if (isInMiniProgram) {
+                        document.getElementById('webviewBadge').style.display = 'block';
+                        console.log('✅ Running in Mini Program WebView');
+                    }
+                });
+            }
         });
         
-        // ✅ Handle bet button click
+        // ✅ Update bet display when input changes
+        function updateBetDisplay() {
+            const betInput = document.getElementById('betAmount');
+            betAmount = parseFloat(betInput.value) || 0.01;
+            
+            // Ensure minimum bet
+            if (betAmount < 0.01) {
+                betAmount = 0.01;
+                betInput.value = betAmount.toFixed(2);
+            }
+            
+            // Update all displays
+            document.getElementById('displayAmount').textContent = betAmount.toFixed(2);
+            document.getElementById('betButtonAmount').textContent = betAmount.toFixed(2);
+            
+            console.log('🎯 Bet amount updated to:', betAmount);
+        }
+        
+        // ✅ Set bet amount with quick buttons
+        function setBetAmount(amount) {
+            document.getElementById('betAmount').value = amount.toFixed(2);
+            updateBetDisplay();
+        }
+        
+        // ✅ Add real-time input listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const betInput = document.getElementById('betAmount');
+            
+            // Update on any input change
+            betInput.addEventListener('input', updateBetDisplay);
+            betInput.addEventListener('change', updateBetDisplay);
+            betInput.addEventListener('keyup', updateBetDisplay);
+        });
+        
+        // Show add money section
+        function showAddMoney() {
+            document.getElementById('addMoneySection').classList.remove('hidden');
+        }
+        
+        // Hide add money section
+        function hideAddMoney() {
+            document.getElementById('addMoneySection').classList.add('hidden');
+            document.getElementById('addMoneyInput').value = '';
+        }
+        
+        // Add money function
+        function addMoney() {
+            const amount = parseFloat(document.getElementById('addMoneyInput').value);
+            
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid amount (minimum $0.01)');
+                return;
+            }
+            
+            // Update local balance
+            currentBalance += amount;
+            updateBalanceDisplay();
+            
+            // Send to mini program
+            if (isInMiniProgram && my.postMessage) {
+                my.postMessage({
+                    action: 'addMoney',
+                    amount: amount
+                });
+            }
+            
+            alert(`💰 $${amount.toFixed(2)} added to your wallet!`);
+            hideAddMoney();
+        }
+        
+        // ✅ Handle bet with dynamic amount
         function handleBet() {
-            console.log(`🟡 Betting $${betAmount} clicked`);
+            // Get current bet amount
+            const currentBetAmount = parseFloat(document.getElementById('betAmount').value) || 0.01;
+            
+            console.log(`🎯 Attempting to bet $${currentBetAmount}`);
+            
+            // Validate bet amount
+            if (currentBetAmount <= 0) {
+                alert('❌ Please enter a valid bet amount (minimum $0.01)');
+                return;
+            }
+            
+            if (currentBetAmount > currentBalance) {
+                alert(`❌ Insufficient balance!\n\nYou have: $${currentBalance.toFixed(2)}\nYou need: $${currentBetAmount.toFixed(2)}\n\nPlease add money or reduce your bet.`);
+                return;
+            }
+            
+            // Confirm bet
+            const confirmBet = confirm(`🎯 Confirm your bet?\n\nBet Amount: $${currentBetAmount.toFixed(2)}\nRemaining Balance: $${(currentBalance - currentBetAmount).toFixed(2)}`);
+            
+            if (!confirmBet) {
+                return;
+            }
             
             const payload = {
                 action: 'bet',
-                amount: betAmount
+                amount: currentBetAmount,
+                bookingId: 'WEB_' + Date.now()
             };
             
-            // ✅ Now my.postMessage should work!
-            if (typeof my !== 'undefined' && my.postMessage) {
+            // Deduct from local balance immediately for better UX
+            currentBalance -= currentBetAmount;
+            updateBalanceDisplay();
+            
+            // Send to mini program
+            if (isInMiniProgram && my.postMessage) {
                 my.postMessage(payload);
-                console.log('✅ Message sent to mini program:', payload);
-                alert('Bet placed: $' + betAmount);
+                console.log('✅ Bet sent to mini program:', payload);
+                alert(`🚀 Bet placed: $${currentBetAmount.toFixed(2)}`);
             } else {
-                console.log('🔴 my.postMessage still not available');
-                alert('ERROR: my.postMessage not available');
+                alert(`🧪 TEST MODE: Would bet $${currentBetAmount.toFixed(2)}`);
+                // Refund in test mode
+                currentBalance += currentBetAmount;
+                updateBalanceDisplay();
             }
         }
         
-        // ✅ Listen for messages from Mini Program (from docs)
-        my.onMessage = function(e) {
-            console.log('📥 Received message from Mini Program:', e);
-        };
+        // Update balance display
+        function updateBalanceDisplay() {
+            document.getElementById('currentBalance').textContent = currentBalance.toFixed(2);
+        }
+        
+        // Listen for messages from Mini Program
+        if (typeof my !== 'undefined') {
+            my.onMessage = function(e) {
+                console.log('📥 Received from Mini Program:', e);
+                
+                if (e.action === 'updateBalance') {
+                    currentBalance = parseFloat(e.balance) || 0;
+                    updateBalanceDisplay();
+                }
+            };
+        }
     </script>
-
-
-
 </body>
 </html>
